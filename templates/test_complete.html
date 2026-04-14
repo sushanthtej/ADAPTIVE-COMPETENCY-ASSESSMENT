@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .score-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .results-container {
+            padding: 30px;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-item.correct {
+            border-left-color: #4caf50;
+        }
+        
+        .result-item.incorrect {
+            border-left-color: #f44336;
+        }
+        
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .answer-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .selected-answer {
+            color: #ff9800;
+        }
+        
+        .correct-answer {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+            }
+            
+            .result-item {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Test Results</h1>
+            <div class="score-card">
+                <div>Your Score</div>
+                <div class="score">{{ score_percentage }}%</div>
+                <div>{{ correct_answers }}/{{ total_questions }} Correct Answers</div>
+            </div>
+        </div>
+        
+        <div class="results-container">
+            <div class="stats">
+                <div class="stat-card">
+                    <div>📚 Topic</div>
+                    <div class="stat-value">{{ topic|title }}</div>
+                </div>
+                <div class="stat-card">
+                    <div>🎯 Difficulty</div>
+                    <div class="stat-value">{{ difficulty|title }}</div>
+                </div>
+                <div class="stat-card">
+                    <div>⏱️ Time Taken</div>
+                    <div class="stat-value">{{ time_taken }}</div>
+                </div>
+            </div>
+            
+            <h2>Detailed Analysis</h2>
+            {% for answer in answers %}
+            <div class="result-item {% if answer.is_correct %}correct{% else %}incorrect{% endif %}">
+                <div class="question-text">
+                    Question {{ forloop.counter }}: {{ answer.question }}
+                </div>
+                <div class="answer-details">
+                    <div>Your Answer: <span class="selected-answer">{{ answer.selected }}</span></div>
+                    <div>Correct Answer: <span class="correct-answer">{{ answer.correct }}</span></div>
+                    <div>Status: {% if answer.is_correct %}✅ Correct{% else %}❌ Incorrect{% endif %}</div>
+                </div>
+                <div class="explanation">
+                    <strong>Explanation:</strong> {{ answer.explanation }}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div style="text-align: center;">
+                <a href="/view_categories/" class="back-btn">← Back to Categories</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

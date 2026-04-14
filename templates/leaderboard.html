@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overall Performance - AssessFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4fe;
+            color: #13294e;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #144bc4, #7b3fe0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-card {
+            background: white;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 40px;
+            padding: 0.5rem 1.5rem;
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            border-radius: 60px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .nav-link.active {
+            background: #13294e;
+            color: white;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* User Stats Panel */
+        .user-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .user-rank {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .user-stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .current-user {
+            background: #fff3cd;
+            font-weight: 600;
+        }
+
+        .user-avatar-sm {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .competency-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-expert { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .badge-advanced { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+        .badge-intermediate { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+        .badge-beginner { background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; }
+
+        .score-high { color: #28a745; font-weight: 700; }
+        .score-medium { color: #ffc107; font-weight: 700; }
+        .score-low { color: #dc3545; font-weight: 700; }
+
+        .rank-medal {
+            font-size: 1.2rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .page-link {
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #667eea;
+        }
+
+        .page-link.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+
+        .btn-light {
+            background: white;
+            color: #667eea;
+            border: 1px solid #ddd;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            table { font-size: 0.85rem; }
+            th, td { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <h1><i class="fas fa-trophy"></i> AssessFlow</h1>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="user-card">
+                    <div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div>
+                    <div>
+                        <strong>{{ user.get_full_name|default:user.username }}</strong>
+                        <div style="font-size: 0.8rem; color: #667eea;">Rank #{{ current_user_rank|default:'N/A' }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'user_logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav">
+            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'view_categories' %}" class="nav-link">Start Test</a>
+            <a href="{% url 'test_history' %}" class="nav-link">History</a>
+            <a href="{% url 'leaderboard' %}" class="nav-link active">Overall Performance</a>
+        </div>
+
+        <!-- Overall Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="stat-number">{{ overall_stats.total_users }}</div>
+                <div>Total Learners</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line"></i>
+                <div class="stat-number">{{ overall_stats.average_score }}%</div>
+                <div>Average Score</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number">{{ overall_stats.total_correct }}/{{ overall_stats.total_questions }}</div>
+                <div>Total Correct</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-graduation-cap"></i>
+                <div class="stat-number">{{ overall_stats.expert_count }}</div>
+                <div>Experts</div>
+            </div>
+        </div>
+
+        <!-- Your Stats -->
+        <div class="user-panel">
+            <h3><i class="fas fa-user-circle"></i> Your Performance</h3>
+            <div class="user-rank">Rank #{{ user_stats.rank }}</div>
+            <div class="user-stats">
+                <div class="user-stat-item">
+                    <div><strong>Tests</strong></div>
+                    <div>{{ user_stats.total_tests }}</div>
+                </div>
+                <div class="user-stat-item">
+                    <div><strong>Avg Score</strong></div>
+                    <div>{{ user_stats.avg_score }}%</div>
+                </div>
+                <div class="user-stat-item">
+                    <div><strong>Best Score</strong></div>
+                    <div>{{ user_stats.best_score }}%</div>
+                </div>
+                <div class="user-stat-item">
+                    <div><strong>Correct</strong></div>
+                    <div>{{ user_stats.total_correct }}/{{ user_stats.total_questions }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performers -->
+        {% if top_performers %}
+        <div class="user-panel">
+            <h3><i class="fas fa-crown text-warning"></i> Top Performers</h3>
+            <div style="display: grid; gap: 0.5rem;">
+                {% for user in top_performers|slice:":5" %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-weight: 700; width: 40px;">#{{ user.rank }}</span>
+                        <div class="user-avatar-sm">{{ user.initials }}</div>
+                        <div>
+                            <strong>{{ user.full_name|default:user.username }}</strong>
+                            <span class="competency-badge badge-{{ user.competency_color }}">
+                                <i class="fas {{ user.competency_icon }}"></i> {{ user.competency_level }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="{% if user.avg_score >= 70 %}score-high{% elif user.avg_score >= 50 %}score-medium{% else %}score-low{% endif %}">
+                        {{ user.avg_score }}%
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Nearby Users -->
+        {% if nearby_users %}
+        <div class="user-panel">
+            <h3><i class="fas fa-chart-simple"></i> Users Around You</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr><th>Rank</th><th>User</th><th>Tests</th><th>Avg Score</th><th>Competency</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for user in nearby_users %}
+                        <tr {% if user.id == current_user.id %}class="current-user"{% endif %}>
+                            <td>#{{ user.nearby_rank }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <div class="user-avatar-sm">{{ user.initials }}</div>
+                                    {{ user.full_name|default:user.username }}
+                                    {% if user.id == current_user.id %}
+                                    <span style="background: #ffc107; padding: 2px 8px; border-radius: 12px; margin-left: 8px; font-size: 0.7rem;">You</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ user.total_tests }}</td>
+                            <td class="{% if user.avg_score >= 70 %}score-high{% elif user.avg_score >= 50 %}score-medium{% else %}score-low{% endif %}">
+                                {{ user.avg_score }}%
+                            </td>
+                            <td>
+                                <span class="competency-badge badge-{{ user.competency_color }}">
+                                    <i class="fas {{ user.competency_icon }}"></i> {{ user.competency_level }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Full Leaderboard -->
+        <div class="leaderboard-table">
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>Tests</th>
+                            <th>Avg Score</th>
+                            <th>Best Score</th>
+                            <th>Competency</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users_data %}
+                        <tr {% if user.id == current_user.id %}class="current-user"{% endif %}>
+                            <td>
+                                {% if user.rank == 1 %}
+                                    <i class="fas fa-crown text-warning"></i>
+                                {% elif user.rank == 2 %}
+                                    <i class="fas fa-medal text-secondary"></i>
+                                {% elif user.rank == 3 %}
+                                    <i class="fas fa-medal" style="color: #cd7f32;"></i>
+                                {% endif %}
+                                #{{ user.rank }}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <div class="user-avatar-sm">{{ user.initials }}</div>
+                                    {{ user.full_name|default:user.username }}
+                                    {% if user.id == current_user.id %}
+                                    <span style="background: #ffc107; padding: 2px 8px; border-radius: 12px; margin-left: 8px; font-size: 0.7rem;">You</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ user.total_tests }}</td>
+                            <td class="{% if user.avg_score >= 70 %}score-high{% elif user.avg_score >= 50 %}score-medium{% else %}score-low{% endif %}">
+                                {{ user.avg_score }}%
+                            </td>
+                            <td>{{ user.best_score }}%</td>
+                            <td>
+                                <span class="competency-badge badge-{{ user.competency_color }}">
+                                    <i class="fas {{ user.competency_icon }}"></i> {{ user.competency_level }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.total_questions > 0 %}
+                                    {% widthratio user.total_correct user.total_questions 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem;">
+                                <i class="fas fa-chart-line" style="font-size: 3rem; color: #ccc;"></i>
+                                <p>No users have completed tests yet. Be the first!</p>
+                                <a href="{% url 'view_categories' %}" class="btn btn-success">Start Your First Test</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="page-link">&laquo; Previous</a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                <span class="page-link active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{% url 'dashboard' %}" class="btn btn-light"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{% url 'view_categories' %}" class="btn btn-success"><i class="fas fa-play-circle"></i> Take New Test</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test History | MCQ Learning Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Modern CSS Variables */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --danger-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --warning-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --shadow-sm: 0 5px 15px rgba(0,0,0,0.08);
+            --shadow-md: 0 10px 25px rgba(0,0,0,0.12);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.15);
+            --shadow-xl: 0 30px 60px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header Animation */
+        .animate-title {
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modern Card Styling */
+        .history-card {
+            background: white;
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            position: relative;
+            border: none;
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+        }
+
+        .history-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .history-card:hover::before {
+            left: 100%;
+        }
+
+        .history-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Card Header Gradient */
+        .card-header-gradient {
+            background: var(--primary-gradient);
+            padding: 1.25rem 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header-gradient::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%);
+            }
+        }
+
+        /* Card Body */
+        .card-body-modern {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Info Rows */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .info-row:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateX(5px);
+            padding-left: 10px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 0.95rem;
+        }
+
+        /* Score Badge */
+        .score-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .score-high {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .score-medium {
+            background: linear-gradient(135deg, #ff9800, #fb8c00);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .score-low {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        /* Difficulty Badges */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-easy {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+        }
+
+        .difficulty-medium {
+            background: linear-gradient(135deg, #ff9800, #fb8c00);
+            color: white;
+        }
+
+        .difficulty-hard {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+        }
+
+        .status-auto {
+            background: linear-gradient(135deg, #ff9800, #fb8c00);
+            color: white;
+        }
+
+        .status-incomplete {
+            background: linear-gradient(135deg, #9e9e9e, #757575);
+            color: white;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 1rem 0 1.5rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .progress-bar-custom {
+            height: 10px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        /* Button Styling */
+        .btn-detail {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn-detail::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-detail:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Date Badge */
+        .date-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            animation: fadeInUp 0.6s ease-out;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: bounce 2s infinite;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .empty-text {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-start {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .history-card {
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .history-card:nth-child(1) { animation-delay: 0.1s; }
+        .history-card:nth-child(2) { animation-delay: 0.2s; }
+        .history-card:nth-child(3) { animation-delay: 0.3s; }
+        .history-card:nth-child(4) { animation-delay: 0.4s; }
+        .history-card:nth-child(5) { animation-delay: 0.5s; }
+        .history-card:nth-child(6) { animation-delay: 0.6s; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .info-value {
+                margin-top: 5px;
+            }
+            
+            .card-header-gradient h5 {
+                font-size: 1.25rem;
+            }
+            
+            .btn-detail {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .empty-icon {
+                font-size: 3rem;
+            }
+            
+            .empty-title {
+                font-size: 1.25rem;
+            }
+            
+            .date-badge {
+                font-size: 0.7rem;
+            }
+            
+            .stats-number {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Grid Layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -0.75rem;
+        }
+
+        .col-md-6, .col-lg-4 {
+            padding: 0.75rem;
+        }
+
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .col-lg-4 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-6, .col-lg-4 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 20px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-white mb-3 animate-title">
+                <i class="fas fa-history me-3"></i>Your Test Journey
+            </h1>
+            <div class="d-flex justify-content-center">
+                <div class="border-bottom border-3 border-white" style="width: 100px;"></div>
+            </div>
+            <p class="text-white-50 mt-3 fs-5">Track your progress, celebrate achievements, and identify areas for improvement</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-clipboard-list fa-2x mb-2" style="color: #667eea;"></i>
+                    <div class="stats-number" id="totalTests">0</div>
+                    <div class="text-muted">Total Tests</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2" style="color: #4caf50;"></i>
+                    <div class="stats-number" id="avgScore">0%</div>
+                    <div class="text-muted">Average Score</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-trophy fa-2x mb-2" style="color: #ff9800;"></i>
+                    <div class="stats-number" id="highestScore">0%</div>
+                    <div class="text-muted">Highest Score</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-star fa-2x mb-2" style="color: #764ba2;"></i>
+                    <div class="stats-number" id="totalQuestions">0</div>
+                    <div class="text-muted">Questions Answered</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <h5 class="mb-3 mb-md-0">
+                    <i class="fas fa-filter me-2"></i>Filter by Difficulty
+                </h5>
+                <div>
+                    <button class="filter-btn active" data-filter="all">All Tests</button>
+                    <button class="filter-btn" data-filter="Easy">Easy</button>
+                    <button class="filter-btn" data-filter="Medium">Medium</button>
+                    <button class="filter-btn" data-filter="Hard">Hard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results Grid -->
+        <div class="row" id="testResultsGrid">
+            <!-- Test cards will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Sample test data (replace with your actual Django data)
+        const testResults = [
+            {
+                id: 1,
+                topic: "Mathematics",
+                created_at: "2024-01-15T10:30:00",
+                score_percentage: 85,
+                correct_answers: 17,
+                total_questions: 20,
+                difficulty: "Medium",
+                final_difficulty: "Hard",
+                time_taken_seconds: 245,
+                status: "Completed",
+                time_per_question: 12.25
+            },
+            {
+                id: 2,
+                topic: "Physics",
+                created_at: "2024-01-20T14:15:00",
+                score_percentage: 92,
+                correct_answers: 23,
+                total_questions: 25,
+                difficulty: "Easy",
+                final_difficulty: "Medium",
+                time_taken_seconds: 180,
+                status: "Completed",
+                time_per_question: 7.2
+            },
+            {
+                id: 3,
+                topic: "Chemistry",
+                created_at: "2024-01-25T09:45:00",
+                score_percentage: 68,
+                correct_answers: 17,
+                total_questions: 25,
+                difficulty: "Hard",
+                final_difficulty: "Medium",
+                time_taken_seconds: 420,
+                status: "Completed",
+                time_per_question: 16.8
+            },
+            {
+                id: 4,
+                topic: "Biology",
+                created_at: "2024-02-01T11:20:00",
+                score_percentage: 78,
+                correct_answers: 39,
+                total_questions: 50,
+                difficulty: "Medium",
+                final_difficulty: "Medium",
+                time_taken_seconds: 380,
+                status: "Auto",
+                time_per_question: 7.6
+            },
+            {
+                id: 5,
+                topic: "Computer Science",
+                created_at: "2024-02-05T16:00:00",
+                score_percentage: 95,
+                correct_answers: 19,
+                total_questions: 20,
+                difficulty: "Easy",
+                final_difficulty: "Hard",
+                time_taken_seconds: 150,
+                status: "Completed",
+                time_per_question: 7.5
+            },
+            {
+                id: 6,
+                topic: "English Literature",
+                created_at: "2024-02-10T13:30:00",
+                score_percentage: 55,
+                correct_answers: 11,
+                total_questions: 20,
+                difficulty: "Medium",
+                final_difficulty: "Easy",
+                time_taken_seconds: 290,
+                status: "Incomplete",
+                time_per_question: 14.5
+            }
+        ];
+
+        // Function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // Function to format time
+        function formatTime(seconds) {
+            if (seconds < 60) return `${Math.round(seconds)} sec`;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.round(seconds % 60);
+            return `${minutes} min ${remainingSeconds} sec`;
+        }
+
+        // Function to get score class
+        function getScoreClass(percentage) {
+            if (percentage >= 70) return 'score-high';
+            if (percentage >= 50) return 'score-medium';
+            return 'score-low';
+        }
+
+        // Function to get status class
+        function getStatusClass(status) {
+            return `status-${status.toLowerCase()}`;
+        }
+
+        // Function to render test cards
+        function renderTestCards(filter = 'all') {
+            const grid = document.getElementById('testResultsGrid');
+            let filteredTests = testResults;
+            
+            if (filter !== 'all') {
+                filteredTests = testResults.filter(test => test.difficulty === filter);
+            }
+            
+            if (filteredTests.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="empty-title">No Tests Found</div>
+                            <div class="empty-text">
+                                No tests match the selected filter. Try a different filter.
+                            </div>
+                            <button class="btn-start" onclick="renderTestCards('all')">
+                                <i class="fas fa-sync-alt me-2"></i>Show All Tests
+                            </button>
+                        </div>
+                    </div>
+                `;
+                updateStatistics(filteredTests);
+                return;
+            }
+            
+            grid.innerHTML = filteredTests.map(test => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="history-card">
+                        <div class="card-header-gradient">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="fas fa-book-open me-2"></i>${test.topic}
+                                </h5>
+                                <div class="date-badge">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    ${formatDate(test.created_at)}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body-modern">
+                            <div class="text-center">
+                                <div class="score-badge ${getScoreClass(test.score_percentage)}">
+                                    <i class="fas fa-star me-2"></i>${test.score_percentage}% Score
+                                </div>
+                            </div>
+                            
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span><i class="fas fa-check-circle me-1"></i>Performance</span>
+                                    <span>${test.correct_answers}/${test.total_questions} Questions</span>
+                                </div>
+                                <div class="progress-bar-custom">
+                                    <div class="progress-fill" style="width: ${test.score_percentage}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-chart-line text-primary"></i>
+                                    Difficulty Progression
+                                </div>
+                                <div class="info-value">
+                                    <span class="difficulty-badge difficulty-${test.difficulty.toLowerCase()}">
+                                        ${test.difficulty}
+                                    </span>
+                                    <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                    <span class="difficulty-badge difficulty-${test.final_difficulty.toLowerCase()}">
+                                        ${test.final_difficulty}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-clock text-info"></i>
+                                    Time Taken
+                                </div>
+                                <div class="info-value">
+                                    ${formatTime(test.time_taken_seconds)}
+                                    ${test.time_taken_seconds < 180 ? '<span class="text-success ms-2">(Fast)</span>' : 
+                                      test.time_taken_seconds > 360 ? '<span class="text-warning ms-2">(Slow)</span>' : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-flag-checkered text-warning"></i>
+                                    Status
+                                </div>
+                                <div class="info-value">
+                                    <span class="status-badge ${getStatusClass(test.status)}">
+                                        <i class="fas ${test.status === 'Completed' ? 'fa-check-circle' : test.status === 'Auto' ? 'fa-clock' : 'fa-exclamation-circle'} me-1"></i>
+                                        ${test.status}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            ${test.time_per_question ? `
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-stopwatch text-secondary"></i>
+                                    Avg. Time/Question
+                                </div>
+                                <div class="info-value">
+                                    ${test.time_per_question.toFixed(1)} seconds
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <a href="#" class="btn-detail" onclick="viewDetails(${test.id})">
+                                <i class="fas fa-chart-bar me-2"></i>View Detailed Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateStatistics(filteredTests);
+        }
+        
+        // Function to update statistics
+        function updateStatistics(tests) {
+            const totalTests = tests.length;
+            const avgScore = tests.reduce((sum, test) => sum + test.score_percentage, 0) / totalTests;
+            const highestScore = Math.max(...tests.map(test => test.score_percentage));
+            const totalQuestions = tests.reduce((sum, test) => sum + test.total_questions, 0);
+            
+            document.getElementById('totalTests').textContent = totalTests;
+            document.getElementById('avgScore').textContent = Math.round(avgScore);
+            document.getElementById('highestScore').textContent = highestScore;
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+        }
+        
+        // Function to view details (replace with actual navigation)
+        function viewDetails(testId) {
+            alert(`Viewing details for test ID: ${testId}\nThis would navigate to the test detail page.`);
+            // window.location.href = `/test_detail/${testId}`;
+        }
+        
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const filter = this.getAttribute('data-filter');
+                renderTestCards(filter);
+            });
+        });
+        
+        // Initialize the page
+        renderTestCards('all');
+    </script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+{% extends 'user_dashboard.html' %}
+
+{% block main %}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        
+        {% if messages %}
+        {% for message in messages %}
+        <p>{{message}}</p>
+        {% endfor %}
+        {% endif %}
+
+        <h2 class="display-5 fw-bold text-white mb-3">Choose Your Section</h2>
+        <div class="d-flex justify-content-center">
+            <div class="border-bottom border-3 border-white" style="width: 80px;"></div>
+        </div>
+        <p class="text-white-50 mt-3 fs-5">Select your preferred category to start practicing</p>
+    </div>
+
+    <div class="row g-5 justify-content-center">
+        
+        <!-- Reasoning -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{% url 'test_conduct' 'reasoning' 'Easy' %}" class="text-decoration-none d-block">
+                <div class="card h-100 border-0 shadow-lg hover-card">
+                    <div class="card-body text-center p-4 p-lg-5">
+                        <div class="icon-wrapper mb-4">
+                            <div class="icon-circle reasoning-icon mx-auto">
+                                🧠
+                            </div>
+                        </div>
+                        <h3 class="card-title fw-bold mb-3">Reasoning</h3>
+                        <p class="card-text text-muted mb-3">Logical & Analytical Reasoning</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                        </div>
+                        <div class="progress-section mb-3">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <!-- <span>Progress</span>
+                                <span>45%</span> -->
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100 rounded-pill start-btn">
+                            Start Practice <span class="ms-2">→</span>
+                        </button>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Quantitative Aptitude -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{% url 'test_conduct' 'aptitude' 'Easy' %}" class="text-decoration-none d-block">
+                <div class="card h-100 border-0 shadow-lg hover-card">
+                    <div class="card-body text-center p-4 p-lg-5">
+                        <div class="icon-wrapper mb-4">
+                            <div class="icon-circle quant-icon mx-auto">
+                                📊
+                            </div>
+                        </div>
+                        <h3 class="card-title fw-bold mb-3">Quantitative Aptitude</h3>
+                        <p class="card-text text-muted mb-3">Maths & Numerical Ability</p>
+                        <div class="progress-section mb-3">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <!-- <span>Progress</span>
+                                <span>32%</span> -->
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: 32%"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success btn-lg w-100 rounded-pill start-btn">
+                            Start Practice <span class="ms-2">→</span>
+                        </button>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Verbal -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{% url 'test_conduct' 'english' 'Easy' %}" class="text-decoration-none d-block">
+                <div class="card h-100 border-0 shadow-lg hover-card">
+                    <div class="card-body text-center p-4 p-lg-5">
+                        <div class="icon-wrapper mb-4">
+                            <div class="icon-circle verbal-icon mx-auto">
+                                📝
+                            </div>
+                        </div>
+                        <h3 class="card-title fw-bold mb-3">Verbal Ability</h3>
+                        <p class="card-text text-muted mb-3">English & Comprehension</p>
+                        <div class="progress-section mb-3">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <!-- <span>Progress</span>
+                                <span>28%</span> -->
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-info" style="width: 28%"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-info btn-lg w-100 rounded-pill start-btn">
+                            Start Practice <span class="ms-2">→</span>
+                        </button>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Task 1A: neutral background to match dashboard */
+    body {
+        background: #f0f4fe;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 2rem;
+    }
+    
+    /* Card Styling with enhanced gaps */
+    .hover-card {
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        background: white;
+        cursor: pointer;
+        margin: 0;
+        height: 100%;
+    }
+    
+    /* Add spacing between cards */
+    .row.g-5 {
+        --bs-gutter-x: 3rem;
+        --bs-gutter-y: 3rem;
+    }
+    
+    @media (max-width: 768px) {
+        .row.g-5 {
+            --bs-gutter-x: 1.5rem;
+            --bs-gutter-y: 1.5rem;
+        }
+    }
+    
+    .hover-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .hover-card:hover::before {
+        left: 100%;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.25) !important;
+    }
+    
+    /* Icon Styling */
+    .icon-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .icon-circle {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 55px;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .reasoning-icon {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+        box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3);
+    }
+    
+    .quant-icon {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white;
+        box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+    }
+    
+    .verbal-icon {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+    }
+    
+    .hover-card:hover .icon-circle {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    /* Card Title */
+    .card-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .hover-card:hover .card-title {
+        transform: scale(1.02);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Badge Styling */
+    .badge-topic {
+        background: #f8f9fa;
+        color: #495057;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+    
+    .hover-card:hover .badge-topic {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    /* Progress Bar Styling */
+    .progress-section {
+        width: 100%;
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 0.6s ease;
+    }
+    
+    .hover-card:hover .progress-bar {
+        width: 100% !important;
+        transition: width 1s ease;
+    }
+    
+    /* Button Styling */
+    .start-btn {
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .start-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .start-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        border: none;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        border: none;
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        border: none;
+        color: white;
+    }
+    
+    /* Animation for cards on load */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .col-lg-4, .col-md-6 {
+        animation: slideInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .col-lg-4:nth-child(1), .col-md-6:nth-child(1) { animation-delay: 0.1s; }
+    .col-lg-4:nth-child(2), .col-md-6:nth-child(2) { animation-delay: 0.3s; }
+    .col-lg-4:nth-child(3), .col-md-6:nth-child(3) { animation-delay: 0.5s; }
+    
+    /* Responsive Design with proper spacing */
+    @media (max-width: 1200px) {
+        .container {
+            padding: 1.5rem;
+        }
+        
+        .icon-circle {
+            width: 95px;
+            height: 95px;
+            font-size: 48px;
+        }
+        
+        .card-title {
+            font-size: 1.6rem;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .row.g-5 {
+            --bs-gutter-x: 2rem;
+            --bs-gutter-y: 2rem;
+        }
+        
+        .card-body {
+            padding: 2rem !important;
+        }
+        
+        .icon-circle {
+            width: 90px;
+            height: 90px;
+            font-size: 45px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem;
+        }
+        
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            font-size: 40px;
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        .badge-topic {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+        }
+        
+        .start-btn {
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+        
+        .row.g-5 {
+            --bs-gutter-x: 1rem;
+            --bs-gutter-y: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container {
+            padding: 0.75rem;
+        }
+        
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            font-size: 35px;
+        }
+        
+        .card-body {
+            padding: 1.25rem !important;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .badge-topic {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+        }
+        
+        .progress-section {
+            margin-bottom: 1rem !important;
+        }
+        
+        .start-btn {
+            font-size: 0.85rem;
+            padding: 8px;
+        }
+    }
+    
+    /* Hover effect for entire card */
+    .hover-card {
+        position: relative;
+    }
+    
+    .hover-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #06b6d4, #0891b2);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+        border-radius: 0 0 24px 24px;
+    }
+    
+    .hover-card:hover::after {
+        transform: scaleX(1);
+    }
+    
+    /* Center text alignment for all elements */
+    .text-center {
+        text-align: center !important;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
+    }
+    
+    /* Enhanced hover effects */
+    .hover-card:hover .progress-bar {
+        animation: pulse 1s ease;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+    
+    /* Additional spacing for better visual separation */
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Ensure cards have consistent height */
+    .card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .progress-section {
+        margin-top: auto;
+    }
+    
+    /* White text for headings on cyan background */
+    .text-white {
+        color: white !important;
+    }
+    
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    .border-white {
+        border-color: white !important;
+    }
+</style>
+
+<!-- Add smooth hover effect for buttons -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add ripple effect to buttons
+        const buttons = document.querySelectorAll('.start-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                
+                let x = e.clientX - e.target.offsetLeft;
+                let y = e.clientY - e.target.offsetTop;
+                
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    });
+</script>
+
+<style>
+    /* Ripple effect style */
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.7);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+    }
+    
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    .start-btn {
+        position: relative;
+        overflow: hidden;
+    }
+</style>
+
+{% endblock %}

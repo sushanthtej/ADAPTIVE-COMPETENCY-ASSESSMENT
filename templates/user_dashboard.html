@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AssessFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4fe;
+            color: #13294e;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #144bc4, #7b3fe0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-card {
+            background: white;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 40px;
+            padding: 0.5rem 1.5rem;
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            border-radius: 60px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #666;
+            transition: 0.2s;
+        }
+
+        .nav-link.active {
+            background: #13294e;
+            color: white;
+        }
+
+        .nav-link:hover:not(.active) {
+            background: #eef2ff;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-info h4 {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #13294e;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: #f0f4fe;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        /* Domain Cards */
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .domain-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .domain-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+        }
+
+        .domain-score {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        /* Two Column Layout */
+        .two-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .panel h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-feedback {
+            background: #f4f1ff;
+            padding: 1rem;
+            border-radius: 15px;
+            border-left: 4px solid #673fe0;
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        /* Test List */
+        .test-list {
+            margin-top: 1rem;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eef2ff;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .test-score {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .score-high { background: #d4edda; color: #155724; }
+        .score-medium { background: #fff3cd; color: #856404; }
+        .score-low { background: #f8d7da; color: #721c24; }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-secondary { background: #e2e3e5; color: #383d41; }
+
+        .badge-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f9ff;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            margin: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .text-success { color: #28a745; }
+        .text-warning { color: #ffc107; }
+        .text-danger { color: #dc3545; }
+        .text-primary { color: #007bff; }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .two-columns { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <h1><i class="fas fa-chart-line"></i> AssessFlow</h1>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="user-card">
+                    <div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div>
+                    <div>
+                        <strong>{{ user.get_full_name|default:user.username }}</strong>
+                        {% if user_rank %}
+                        <div style="font-size: 0.8rem; color: #667eea;">Rank #{{ user_rank }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'user_logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav">
+            <a href="{% url 'dashboard' %}" class="nav-link active">Dashboard</a>
+            <a href="{% url 'view_categories' %}" class="nav-link">Start Test</a>
+            <a href="{% url 'test_history' %}" class="nav-link">History</a>
+            <a href="{% url 'leaderboard' %}" class="nav-link">Overall Performance</a>
+        </div>
+        {% block main %}
+
+        {% if has_tests %}
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>CI Score</h4>
+                    <div class="stat-number">{{ ci_score|floatformat:0 }}%</div>
+                    {% if improvement != 0 %}
+                    <small class="{% if improvement > 0 %}text-success{% else %}text-danger{% endif %}">
+                        <i class="fas fa-arrow-{% if improvement > 0 %}up{% else %}down{% endif %}"></i> 
+                        {{ improvement|floatformat:1 }}%
+                    </small>
+                    {% endif %}
+                </div>
+                <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Tests Completed</h4>
+                    <div class="stat-number">{{ total_tests }}</div>
+                    {% if in_progress_count > 0 %}
+                    <small class="text-warning">{{ in_progress_count }} in progress</small>
+                    {% endif %}
+                </div>
+                <div class="stat-icon"><i class="fas fa-list-check"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Questions Solved</h4>
+                    <div class="stat-number">{{ total_questions }}</div>
+                    <small>{{ total_correct }} correct</small>
+                </div>
+                <div class="stat-icon"><i class="fas fa-question-circle"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Best Score</h4>
+                    <div class="stat-number">{{ best_score|floatformat:0 }}%</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+            </div>
+        </div>
+
+        <!-- Domain Performance -->
+        <div class="domain-grid">
+            {% for domain, data in domain_performance.items %}
+            <div class="domain-card">
+                <div class="domain-icon" style="background: 
+                    {% if domain == 'Aptitude' %}#667eea20{% elif domain == 'Reasoning' %}#4caf5020{% else %}#ff980020{% endif %};
+                    color: {% if domain == 'Aptitude' %}#667eea{% elif domain == 'Reasoning' %}#4caf50{% else %}#ff9800{% endif %};">
+                    <i class="fas {% if domain == 'Aptitude' %}fa-calculator{% elif domain == 'Reasoning' %}fa-brain{% else %}fa-comment-dots{% endif %}"></i>
+                </div>
+                <h4>{{ domain }}</h4>
+                <div class="domain-score {% if data.avg_score >= 70 %}text-success{% elif data.avg_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                    {{ data.avg_score|floatformat:0 }}%
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ data.avg_score }}%; background: 
+                        {% if domain == 'Aptitude' %}#667eea{% elif domain == 'Reasoning' %}#4caf50{% else %}#ff9800{% endif %};"></div>
+                </div>
+                <div class="domain-stats" style="font-size: 0.8rem; color: #666;">
+                    {{ data.total_tests }} tests • {{ data.accuracy }}% accuracy
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Badges -->
+        {% if badges %}
+        <div style="background: white; border-radius: 20px; padding: 1rem; margin-bottom: 1.5rem;">
+            <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-medal"></i> Achievements</h4>
+            {% for badge in badges %}
+            <span class="badge-item">
+                <i class="fas {{ badge.icon }} text-{{ badge.color }}"></i> {{ badge.name }}
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Two Column Layout -->
+        <div class="two-columns">
+            <!-- Chart Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-chart-bar"></i> Domain Performance</h2>
+                <canvas id="domainChart" height="200"></canvas>
+            </div>
+
+            <!-- AI Insights Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-brain"></i> AI Insights</h2>
+                <div class="ai-feedback">
+                    <i class="fas {{ ai_feedback_icon }}" style="font-size: 2rem; color: #673fe0;"></i>
+                    <div>{{ ai_feedback }}</div>
+                </div>
+
+                {% if recent_tests %}
+                <h4><i class="fas fa-clock"></i> Recent Tests</h4>
+                <div class="test-list">
+                    {% for test in recent_tests %}
+                    <div class="test-item">
+                        <div>
+                            <span>{{ test.topic|truncatechars:35 }}</span>
+                            <span class="badge badge-{{ test.status_class }}">{{ test.status_badge }}</span>
+                        </div>
+                        <span class="test-score 
+                            {% if test.score_percentage >= 70 %}score-high
+                            {% elif test.score_percentage >= 50 %}score-medium
+                            {% else %}score-low{% endif %}">
+                            {{ test.score_percentage|floatformat:0 }}% ({{ test.formatted_time }})
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Weekly Trend -->
+        <div class="panel">
+            <h2><i class="fas fa-chart-line"></i> Weekly Performance Trend</h2>
+            <canvas id="trendChart" height="80"></canvas>
+        </div>
+
+        <!-- Recommendation -->
+        {% if weakest_domain %}
+        <div class="recommendation">
+            <i class="fas fa-lightbulb text-warning"></i>
+            <strong>Focus Area: {{ weakest_domain }}</strong> - Practice more to improve your score in this domain.
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-chart-line" style="font-size: 3rem; color: #667eea;"></i>
+            <h3>No Test Results Yet</h3>
+            <p>Start your first assessment to see your performance dashboard!</p>
+            {% if in_progress_count > 0 %}
+            <div style="background: #fff3cd; padding: 1rem; border-radius: 15px; margin: 1rem auto; max-width: 400px;">
+                <i class="fas fa-hourglass-half"></i> You have {{ in_progress_count }} incomplete test(s). Complete them to see analytics!
+            </div>
+            {% endif %}
+            <a href="{% url 'view_categories' %}" class="btn-primary">
+                <i class="fas fa-play-circle"></i> Take First Test
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% endblock %}
+
+    <script>
+        {% if has_tests %}
+        // Domain Chart
+        const domainCtx = document.getElementById('domainChart');
+        if (domainCtx) {
+            new Chart(domainCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Aptitude', 'Reasoning', 'Verbal'],
+                    datasets: [{
+                        label: 'Score (%)',
+                        data: [
+                            {{ domain_performance.Aptitude.avg_score|default:0|floatformat:0 }},
+                            {{ domain_performance.Reasoning.avg_score|default:0|floatformat:0 }},
+                            {{ domain_performance.Verbal.avg_score|default:0|floatformat:0 }}
+                        ],
+                        backgroundColor: ['#667eea', '#4caf50', '#ff9800'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score (%)' } } }
+                }
+            });
+        }
+
+        // Trend Chart
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx && {{ weekly_data|length }} > 0) {
+            new Chart(trendCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {{ week_labels|safe }},
+                    datasets: [{
+                        data: {{ weekly_data|safe }},
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score (%)' } } }
+                }
+            });
+        }
+        {% endif %}
+    </script>
+</body>
+</html>

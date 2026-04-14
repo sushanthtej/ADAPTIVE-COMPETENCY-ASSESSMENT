@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test in Progress - {{ topic|title }} ({{ difficulty|title }})</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4fe;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* ── Fullscreen Gate Overlay (shown BEFORE test starts) ── */
+        #fsGate {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            color: #fff;
+        }
+        #fsGate h1 { font-size: 2.4rem; margin-bottom: 12px; letter-spacing: -0.5px; }
+        #fsGate p  { font-size: 1.1rem; opacity: 0.8; max-width: 520px; margin-bottom: 32px; line-height: 1.6; }
+        #fsStartBtn {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; border-radius: 50px; color: #fff;
+            font-size: 1.15rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 8px 32px rgba(102,126,234,0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #fsStartBtn:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(102,126,234,0.6); }
+        .gate-badges {
+            display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center;
+        }
+        .gate-badge {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px; padding: 8px 20px; font-size: 0.9rem;
+        }
+
+        /* ── Fullscreen exit warning (shown DURING test if ESC pressed) ── */
+        #fsWarning {
+            display: none;
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.93); color: #fff;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 40px;
+        }
+        #fsWarning h2 { font-size: 2rem; margin-bottom: 12px; }
+        #fsWarning p  { font-size: 1.05rem; opacity: 0.85; max-width: 480px; margin-bottom: 28px; }
+        .fs-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .fs-btn {
+            padding: 14px 32px; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+        }
+        .fs-btn-resume { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+        .fs-btn-exit   { background: #f44336; color: #fff; }
+
+        /* ── Main container ── */
+        .container {
+            max-width: 900px; margin: 0 auto;
+            background: white; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            overflow: hidden;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 30px;
+        }
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px;
+        }
+        .header h1 { font-size: 22px; }
+
+        .info-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .topic-badge {
+            background: rgba(255,255,255,0.2); padding: 5px 12px;
+            border-radius: 20px; font-size: 14px;
+        }
+        .skip-badge {
+            background: rgba(255,200,0,0.25); padding: 5px 12px;
+            border-radius: 20px; font-size: 13px; color: #ffe48d;
+        }
+        .timer {
+            background: rgba(0,0,0,0.3); padding: 8px 15px;
+            border-radius: 25px; font-family: monospace;
+            font-size: 24px; font-weight: bold;
+        }
+        .timer.warning { background: #f44336; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.05)} }
+
+        .progress-bar  { background: rgba(255,255,255,0.2); height:6px; margin-top:14px; border-radius:3px; overflow:hidden; }
+        .progress-fill { background: #4caf50; height:100%; transition:width 0.3s ease; }
+
+        .question-container { padding: 36px 40px; }
+
+        .question-header {
+            display: flex; justify-content: space-between; align-items: baseline;
+            margin-bottom: 24px; padding-bottom: 14px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .question-number { font-size: 17px; color: #667eea; font-weight: bold; }
+        .skipped-tag {
+            font-size: 13px; background: #fff3cd; color: #856404;
+            padding: 3px 10px; border-radius: 20px; margin-left: 8px;
+        }
+
+        .question-text { font-size: 20px; line-height: 1.6; margin-bottom: 28px; color: #333; }
+
+        .options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+        .option {
+            display: flex; align-items: center; padding: 15px;
+            background: #f8f9fa; border: 2px solid #e0e0e0;
+            border-radius: 10px; cursor: pointer; transition: all 0.25s ease;
+        }
+        .option:hover  { background:#e3f2fd; border-color:#667eea; transform:translateX(4px); }
+        .option.selected { background:#e3f2fd; border-color:#667eea; box-shadow:0 4px 14px rgba(102,126,234,0.2); }
+        .option-radio  { margin-right: 15px; width:20px; height:20px; cursor:pointer; }
+        .option-text   { flex:1; font-size:16px; cursor:pointer; }
+
+        /* ── Three-button action row ── */
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .btn-exit {
+            padding: 14px;
+            background: #fff; border: 2px solid #f44336;
+            color: #f44336; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-exit:hover { background: #f44336; color: #fff; }
+
+        .btn-submit {
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px;
+            font-size: 17px; font-weight: bold; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-submit:hover  { transform: translateY(-2px); box-shadow:0 5px 20px rgba(102,126,234,0.4); }
+        .btn-submit:disabled { background:#ccc; cursor:not-allowed; transform:none; }
+
+        .btn-skip {
+            padding: 14px;
+            background: #fff; border: 2px solid #ff9800;
+            color: #ff9800; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-skip:hover { background: #ff9800; color: #fff; }
+
+        .loading { text-align:center; padding:20px; display:none; }
+        .spinner {
+            border:3px solid #f3f3f3; border-top:3px solid #667eea;
+            border-radius:50%; width:40px; height:40px;
+            animation: spin 1s linear infinite; margin:0 auto;
+        }
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+        .question-counter { font-size:13px; color:#888; margin-top:14px; text-align:center; }
+
+        @media (max-width:768px) {
+            .question-container { padding:20px; }
+            .question-text { font-size:17px; }
+            .action-row { grid-template-columns:1fr 1fr; }
+            .btn-submit  { grid-column: 1 / -1; order: -1; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Task 5: Fullscreen gate – shown before the test begins.
+     Questions are hidden behind this overlay until the user
+     explicitly clicks "Enter Fullscreen & Start Test".
+════════════════════════════════════════════════════════════════ -->
+<div id="fsGate">
+    <div style="font-size:72px; margin-bottom:20px;">📝</div>
+    <h1>{{ topic|title }} Assessment</h1>
+    <p>
+        This test requires <strong>fullscreen mode</strong> to ensure integrity.
+        You have <strong>20 minutes</strong> to answer {{ total_questions }} questions.
+        Exiting fullscreen will end your test automatically.
+    </p>
+    <div class="gate-badges">
+        <span class="gate-badge">⏱ 20 minutes</span>
+        <span class="gate-badge">❓ {{ total_questions }} questions</span>
+        <span class="gate-badge">🔒 Fullscreen required</span>
+        <span class="gate-badge">📊 Difficulty: {{ difficulty }}</span>
+    </div>
+    <button id="fsStartBtn" onclick="startTestFullscreen()">
+        🔲 Enter Fullscreen &amp; Start Test
+    </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Task 5: Warning overlay – shown if user presses ESC mid-test.
+════════════════════════════════════════════════════════════════ -->
+<div id="fsWarning">
+    <div style="font-size:64px;margin-bottom:16px;">⚠️</div>
+    <h2>Fullscreen Required</h2>
+    <p>
+        You exited fullscreen mode. The test will be submitted in
+        <strong id="fsCountdown">5</strong> seconds unless you return.
+    </p>
+    <div class="fs-actions">
+        <button class="fs-btn fs-btn-resume" onclick="enterFullscreen()">🔲 Return to Fullscreen</button>
+        <button class="fs-btn fs-btn-exit"   onclick="doExitTest()">❌ End Test Now</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Main test UI (hidden while fsGate is visible via JS)
+════════════════════════════════════════════════════════════════ -->
+<div class="container" id="mainContainer" style="display:none;">
+    <div class="header">
+        <div class="header-top">
+            <h1>📝 {{ topic|title }} — {{ difficulty }} Test</h1>
+            <div class="timer" id="timer">20:00</div>
+        </div>
+        <div class="info-bar">
+            <div>
+                <span class="topic-badge">📚 {{ topic|title }}</span>
+                <span class="skip-badge" id="skipBadge" style="display:none;">⏭ <span id="skipCount">0</span> skipped</span>
+            </div>
+            <span style="opacity:0.75;font-size:13px;">Q{{ question_number }} / {{ total_questions }}</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:{{ progress }}%"></div>
+        </div>
+    </div>
+
+    <div class="question-container">
+        <div class="question-header">
+            <span class="question-number">
+                Question {{ question_number }} of {{ total_questions }}
+                {% if is_skipped_revisit %}<span class="skipped-tag">↩ Revisiting</span>{% endif %}
+            </span>
+            <span class="question-number">📊 {{ progress }}% Complete</span>
+        </div>
+
+        <div class="question-text" id="questionText">{{ question.question }}</div>
+
+        <div class="options" id="optionsContainer">
+            {% for option in question.options %}
+            <div class="option" data-value="{{ option }}">
+                <input type="radio" name="answer" value="{{ option }}" class="option-radio" id="option{{ forloop.counter }}">
+                <label for="option{{ forloop.counter }}" class="option-text">{{ option }}</label>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Task 3 + Task 4: Three-button row -->
+        <div class="action-row" id="actionContainer">
+            <!-- Task 4 – Exit -->
+            <button type="button" class="btn-exit" id="exitBtn">🚪 Exit</button>
+
+            <!-- Submit (existing logic) -->
+            <button type="button" class="btn-submit" id="nextBtn" disabled>
+                {% if is_last_question %}Save &amp; Proceed to Submit{% else %}Save &amp; Next →{% endif %}
+            </button>
+
+            <!-- Task 3 – Skip -->
+            <button type="button" class="btn-skip" id="skipBtn">⏭ Skip</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top:10px;color:#666;">Loading next question…</p>
+        </div>
+        <div class="question-counter" id="qCounter">
+            {{ question_number }} of {{ total_questions }} questions answered
+        </div>
+    </div>
+</div><!-- /#mainContainer -->
+
+<script>
+    // ── Shared state ────────────────────────────────────────────────────────
+    let timeLeft         = {{ time_left }};
+    let timerInterval;
+    let selectedAnswer   = null;
+    let isSubmitting     = false;
+    let questionStartTime = Date.now();
+    let testActive       = false;   // true only after user enters fullscreen
+    let fsCountdownTimer = null;
+    let testStarted      = false;   // guard so fsGate can't be bypassed
+
+    /**
+     * KEY FIX: `navigating` is set to true immediately before any deliberate
+     * DOM update that might transiently affect fullscreen state, and reset
+     * to false right after.  The fullscreenchange listener checks this flag
+     * and skips the ESC-warning logic while it is true, preventing false
+     * positives from triggering an auto-submit during normal navigation.
+     */
+    let navigating = false;
+
+    // ── Helpers ─────────────────────────────────────────────────────────────
+    function getCookie(name) {
+        let v = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(c => {
+                c = c.trim();
+                if (c.startsWith(name + '='))
+                    v = decodeURIComponent(c.substring(name.length + 1));
+            });
+        }
+        return v;
+    }
+
+    function showLoading() {
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('skipBtn').style.display = 'none';
+        document.getElementById('exitBtn').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+    }
+    function hideLoading() {
+        document.getElementById('nextBtn').style.display = '';
+        document.getElementById('skipBtn').style.display = '';
+        document.getElementById('exitBtn').style.display = '';
+        document.getElementById('loading').style.display = 'none';
+    }
+
+    // ── Fullscreen API wrappers ──────────────────────────────────────────────
+    function enterFullscreen() {
+        const el = document.documentElement;
+        const req = el.requestFullscreen || el.webkitRequestFullscreen
+                    || el.mozRequestFullScreen || el.msRequestFullscreen;
+        if (req) return req.call(el);
+        return Promise.reject('FS not supported');
+    }
+
+    function isFullscreen() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement
+                  || document.mozFullScreenElement || document.msFullscreenElement);
+    }
+
+    // Task 5: Start Test button – request fullscreen THEN reveal UI
+    function startTestFullscreen() {
+        enterFullscreen().then(() => {
+            document.getElementById('fsGate').style.display = 'none';
+            document.getElementById('mainContainer').style.display = '';
+            testActive        = true;
+            testStarted       = true;
+            questionStartTime = Date.now();
+            startTimer();
+        }).catch(() => {
+            document.getElementById('fsGate').style.display = 'none';
+            document.getElementById('mainContainer').style.display = '';
+            testActive        = true;
+            testStarted       = true;
+            questionStartTime = Date.now();
+            startTimer();
+        });
+    }
+
+    // ── Task 5: Handle fullscreen-change events ──────────────────────────────
+    // IMPORTANT: skip the handler while `navigating` is true so that question
+    // transitions (which never touch the fullscreen API) don't look like an
+    // ESC press to this listener.
+    function onFullscreenChange() {
+        if (!testActive || !testStarted) return;
+        if (navigating) return;   // ← KEY FIX: ignore events during navigation
+
+        const warning = document.getElementById('fsWarning');
+        if (!isFullscreen()) {
+            warning.style.display = 'flex';
+            let secs = 5;
+            document.getElementById('fsCountdown').textContent = secs;
+            if (fsCountdownTimer) clearInterval(fsCountdownTimer);
+            fsCountdownTimer = setInterval(() => {
+                secs--;
+                document.getElementById('fsCountdown').textContent = secs;
+                if (secs <= 0) {
+                    clearInterval(fsCountdownTimer);
+                    doExitTest();
+                }
+            }, 1000);
+        } else {
+            warning.style.display = 'none';
+            if (fsCountdownTimer) { clearInterval(fsCountdownTimer); fsCountdownTimer = null; }
+        }
+    }
+
+    ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
+        .forEach(ev => document.addEventListener(ev, onFullscreenChange));
+
+    // ── Task 4: Exit test (status → expired) ────────────────────────────────
+    async function doExitTest() {
+        if (fsCountdownTimer) clearInterval(fsCountdownTimer);
+        if (!testActive) { window.location.href = '/test_history/'; return; }
+        testActive = false;
+        clearInterval(timerInterval);
+        try {
+            await fetch('/exit_test/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ reason: 'user_exit' })
+            });
+        } catch(_) {}
+        window.location.href = '/test_history/';
+    }
+
+    // Tab close / navigation beacon
+    function beaconAutoSubmit() {
+        if (!testActive) return;
+        const data = new Blob([JSON.stringify({ reason: 'page_leave' })], { type: 'application/json' });
+        navigator.sendBeacon('/auto_submit_test/', data);
+        testActive = false;
+    }
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && testActive) beaconAutoSubmit();
+    });
+    window.addEventListener('beforeunload', () => { if (testActive) beaconAutoSubmit(); });
+
+    // ── Timer ────────────────────────────────────────────────────────────────
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+    }
+    function updateTimer() {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            testActive = false;
+            alert("Time's up! Your test has been submitted.");
+            window.location.href = '/test_history/';
+            return;
+        }
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        document.getElementById('timer').textContent =
+            `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        if (timeLeft <= 300) document.getElementById('timer').classList.add('warning');
+        timeLeft--;
+    }
+
+    // ── Option selection (event delegation – works on dynamic options) ────────
+    document.getElementById('optionsContainer').addEventListener('click', function(e) {
+        const optionDiv = e.target.closest('.option');
+        if (!optionDiv) return;
+        const radio = optionDiv.querySelector('.option-radio');
+        if (!radio) return;
+        radio.checked = true;
+        selectedAnswer = radio.value;
+        document.querySelectorAll('#optionsContainer .option').forEach(o => o.classList.remove('selected'));
+        optionDiv.classList.add('selected');
+        document.getElementById('nextBtn').disabled = false;
+    });
+
+    // ── KEY FIX: Dynamic DOM update (replaces window.location.reload()) ───────
+    /**
+     * updateQuestionUI(data)
+     * Called after a successful save_answer or skip_question fetch.
+     * Surgically rewrites every visible piece of question state so the
+     * browser stays on the same page – and fullscreen is never interrupted.
+     *
+     * Expected `data` shape (from either backend endpoint):
+     *  {
+     *    success: true,
+     *    is_complete: false,
+     *    next_question_number: <int>,   // 1-based
+     *    total: <int>,
+     *    progress: <int 0-100>,
+     *    question_data: { question: '...', options: ['A','B','C','D'] } | null,
+     *    is_skipped_revisit: <bool>,
+     *    skipped_count: <int>,
+     *  }
+     */
+    function updateQuestionUI(data) {
+        const qNum   = data.next_question_number;
+        const total  = data.total;
+        const qData  = data.question_data;
+
+        // 1. Question text
+        if (qData && qData.question) {
+            document.getElementById('questionText').textContent = qData.question;
+        }
+
+        // 2. Options – rebuild the options container
+        const container = document.getElementById('optionsContainer');
+        if (qData && Array.isArray(qData.options) && qData.options.length) {
+            container.innerHTML = qData.options.map((opt, i) => `
+                <div class="option" data-value="${escapeHtml(opt)}">
+                    <input type="radio" name="answer" value="${escapeHtml(opt)}"
+                           class="option-radio" id="option${i + 1}">
+                    <label for="option${i + 1}" class="option-text">${escapeHtml(opt)}</label>
+                </div>
+            `).join('');
+        }
+
+        // 3. Reset selection state
+        selectedAnswer = null;
+        document.getElementById('nextBtn').disabled = true;
+
+        // 4. Question header – number & revisit tag
+        const qNumSpan = document.querySelector('.question-number');
+        if (qNumSpan) {
+            qNumSpan.innerHTML =
+                `Question ${qNum} of ${total}` +
+                (data.is_skipped_revisit ? ' <span class="skipped-tag">↩ Revisiting</span>' : '');
+        }
+
+        // 5. Progress % label (second .question-number span)
+        const allQNumSpans = document.querySelectorAll('.question-number');
+        if (allQNumSpans[1]) allQNumSpans[1].textContent = `📊 ${data.progress}% Complete`;
+
+        // 6. Progress bar fill
+        const fill = document.getElementById('progressFill');
+        if (fill) fill.style.width = data.progress + '%';
+
+        // 7. Q / total in the header info-bar
+        const infoQSpan = document.querySelector('.info-bar span:last-child');
+        if (infoQSpan) infoQSpan.textContent = `Q${qNum} / ${total}`;
+
+        // 8. Skip badge
+        const skipped = data.skipped_count || 0;
+        if (skipped > 0) {
+            document.getElementById('skipBadge').style.display = '';
+            document.getElementById('skipCount').textContent = skipped;
+        } else {
+            document.getElementById('skipBadge').style.display = 'none';
+        }
+
+        // 9. Counter text at bottom
+        const counter = document.getElementById('qCounter');
+        if (counter) counter.textContent = `${qNum - 1} of ${total} questions answered`;
+
+        // 10. Update "Save & Next" vs "Save & Proceed to Submit" label
+        const nextBtn = document.getElementById('nextBtn');
+        const isLast  = qNum === total;
+        nextBtn.innerHTML = isLast ? 'Save &amp; Proceed to Submit' : 'Save &amp; Next →';
+
+        // 11. Scroll question into view smoothly
+        document.querySelector('.question-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // 12. Reset the per-question timer
+        questionStartTime = Date.now();
+    }
+
+    /** Minimal HTML-escape to prevent XSS when injecting option text into innerHTML */
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ── Event Delegation for Buttons ─────────────────────────────────────────
+    document.getElementById('actionContainer').addEventListener('click', function(e) {
+        if (e.target.closest('#nextBtn') && !e.target.closest('#nextBtn').disabled) {
+            saveAndNext();
+        } else if (e.target.closest('#skipBtn')) {
+            doSkip();
+        } else if (e.target.closest('#exitBtn')) {
+            doExitTest();
+        }
+    });
+
+    // ── Task 3: Skip question ────────────────────────────────────────────────
+    async function doSkip() {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        showLoading();
+        try {
+            const res  = await fetch('/skip_question/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({})
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (data.is_complete) {
+                    navigating = true;
+                    clearInterval(timerInterval);
+                    testActive = false;
+                    window.location.href = '/test_ready_to_submit/{{ topic }}/{{ difficulty }}/';
+                } else if (data.question_data) {
+                    // ── KEY FIX: update DOM in-place, no reload needed ──────
+                    navigating = true;
+                    hideLoading();
+                    updateQuestionUI(data);
+                    isSubmitting = false;
+                    setTimeout(() => { navigating = false; }, 100);
+                } else {
+                    // Fallback: question generation failed on backend; DO NOT reload!
+                    throw new Error('Next question generation failed on the backend.');
+                }
+            } else {
+                throw new Error('Server returned unsuccessful skip status.');
+            }
+        } catch(err) {
+            console.error('Skip error:', err);
+            alert('Unable to skip. Please try again.');
+            hideLoading();
+            isSubmitting = false;
+        }
+    }
+
+    // ── Save answer & advance to next question ───────────────────────────────
+    async function saveAndNext() {
+        if (!selectedAnswer) { alert('Please select an answer before proceeding!'); return; }
+        if (isSubmitting) return;
+        isSubmitting = true;
+
+        const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000);
+        document.getElementById('nextBtn').disabled = true;
+        showLoading();
+
+        try {
+            const res  = await fetch('/save_answer/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ answer: selectedAnswer, time_taken: timeTaken })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (data.is_complete) {
+                    navigating = true;
+                    clearInterval(timerInterval);
+                    testActive = false;
+                    window.location.href = '/test_ready_to_submit/{{ topic }}/{{ difficulty }}/';
+                } else if (data.question_data) {
+                    // ── KEY FIX: update DOM in-place, no reload needed ───────
+                    navigating = true;
+                    hideLoading();
+                    updateQuestionUI(data);
+                    isSubmitting = false;
+                    setTimeout(() => { navigating = false; }, 100);
+                } else {
+                    // Fallback: backend failed to pre-generate the question
+                    throw new Error('Next question generation failed on the backend.');
+                }
+            } else {
+                throw new Error('Server returned unsuccessful save status.');
+            }
+        } catch(err) {
+            console.error('Network error:', err);
+            alert('Network error. Please check your connection or try again.');
+            hideLoading();
+            document.getElementById('nextBtn').disabled = false;
+            isSubmitting = false;
+        }
+    }
+
+    // Enter key shortcut
+    document.addEventListener('keypress', e => {
+        if (e.key === 'Enter' && selectedAnswer && !isSubmitting) saveAndNext();
+    });
+
+    console.log('Test ready | Topic: {{ topic }} | Q{{ question_number }}/{{ total_questions }}');
+</script>
+</body>
+</html>
