@@ -7,13 +7,15 @@ import os
 from crewai import Agent, Task, Crew, Process
 
 # ====================== GEMINI LLM SETUP ======================
+
 from langchain_openai import ChatOpenAI
+import os
 
 def get_default_llm():
     return ChatOpenAI(
         model="gpt-4o-mini",
         temperature=0.7,
-        api_key=os.getenv("GCP_API_KEY")
+        api_key=os.getenv("OPENAI_API_KEY")
     )
 # ====================== 1. MCQ EVALUATOR AGENT ======================
 def create_mcq_evaluator_agent(llm=None):
