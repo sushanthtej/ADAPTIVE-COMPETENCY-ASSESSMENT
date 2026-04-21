@@ -5,7 +5,6 @@
 
 import os
 from crewai import Agent, Task, Crew, Process
-from crewai.llm import LLM
 
 # ====================== GEMINI LLM SETUP ======================
 def get_default_llm():
