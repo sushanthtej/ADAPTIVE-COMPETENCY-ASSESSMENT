@@ -7,18 +7,14 @@ import os
 from crewai import Agent, Task, Crew, Process
 
 # ====================== GEMINI LLM SETUP ======================
-def get_default_llm():
-    api_key = ""
-    if not api_key:
-        raise ValueError("❌ GEMINI_API_KEY is not set!\nRun this command first:\nset GEMINI_API_KEY=")
-    
-    print("✅ Using Gemini model: gemini/gemini-2.5-flash")
-    return LLM(
-        model="gemini/gemini-2.5-flash",
-        temperature=0.7,
-        api_key=api_key,
-    )
+from langchain_openai import ChatOpenAI
 
+def get_default_llm():
+    return ChatOpenAI(
+        model="gpt-4o-mini",
+        temperature=0.7,
+        api_key=os.getenv("GCP_API_KEY")
+    )
 # ====================== 1. MCQ EVALUATOR AGENT ======================
 def create_mcq_evaluator_agent(llm=None):
     if llm is None:
