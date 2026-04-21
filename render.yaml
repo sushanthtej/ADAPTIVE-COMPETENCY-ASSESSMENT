@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: adaptive-app
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn project.wsgi"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.13
