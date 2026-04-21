@@ -1111,30 +1111,38 @@
                                 
                                 <!-- Explanation -->
                                 {% if question.explanation %}
-                                <div class="mb-4 p-3 bg-info bg-opacity-10 rounded-3 border-start border-info border-4 shadow-sm">
-                                    <div class="fw-bold text-dark mb-2">
-                                        <i class="fas fa-lightbulb me-1"></i>Explanation:
+                                <div class="mb-4 p-3 rounded-3 shadow"
+                                     style="background-color: #ffffff; border-left: 6px solid #0d6efd;">
+                                    <div class="fw-bold mb-2" style="color: #0d6efd;">
+                                        <i class="fas fa-lightbulb me-1"></i> Explanation:
                                     </div>
-                                    <p class="mb-0" style="color: #000000;">{{ question.explanation }}</p>
+
+                                    <p class="mb-0 text-dark" style="font-weight: 500;">
+                                        {{ question.explanation }}
+                                    </p>
                                 </div>
                                 {% endif %}
                                 
                                 <!-- AI Analysis -->
-                                {% if question.crew_reasoning %}
-                                <div class="mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-start border-primary border-4 shadow-sm">
-                                    <div class="fw-bold text-primary mb-2">
-                                        <i class="fas fa-robot me-1"></i>AI Analysis:
-                                    </div>
-                                    <p class="mb-0" style="color: #000000;">{{ question.crew_reasoning }}</p>
-                                    {% if question.crew_recommendation %}
-                                    <div class="mt-2 p-2 bg-warning bg-opacity-10 rounded">
-                                        <i class="fas fa-graduation-cap me-1 text-warning"></i>
-                                        <strong class="text-warning">Recommendation:</strong> 
-                                        <span style="color: #000000;">{{ question.crew_recommendation }}</span>
-                                    </div>
-                                    {% endif %}
+                              {% if question.crew_reasoning %}
+                              <div class="mb-3 p-3 rounded-3 shadow"
+                                   style="background-color: #ffffff; border-left: 6px solid #6f42c1;">
+                                <div class="fw-bold mb-2" style="color: #6f42c1;">
+                                    <i class="fas fa-robot me-1"></i> AI Analysis:
+                                </div>
+                                <p class="mb-0 text-dark" style="font-weight: 500;">
+                                    {{ question.crew_reasoning }}
+                                </p>
+                                {% if question.crew_recommendation %}
+                                <div class="mt-3 p-2 rounded"
+                                     style="background-color: #fff3cd; border-left: 4px solid #ffc107;">
+                                     <i class="fas fa-graduation-cap me-1" style="color: #b8860b;"></i>
+                                     <strong style="color: #b8860b;">Recommendation:</strong> 
+                                     <span class="text-dark">{{ question.crew_recommendation }}</span>
                                 </div>
                                 {% endif %}
+                            </div>
+                            {% endif %}
                                 
                                 <!-- Difficulty Info -->
                                 <div class="row g-2 mt-3">
@@ -1197,9 +1205,11 @@
                             </span>
                         </div>
                         {% if wrong.explanation %}
-                        <div class="mt-3 p-3 bg-info bg-opacity-10 rounded-3">
-                            <small class="text-muted">
-                                <i class="fas fa-lightbulb me-1"></i>{{ wrong.explanation|truncatechars:200 }}
+                        <div class="mt-3 p-3 rounded-3 shadow-sm"
+                             style="background-color: #ffffff; border-left: 5px solid #0dcaf0;">
+                            <small style="color: #000; font-weight: 500;">
+                                <i class="fas fa-lightbulb me-1" style="color: #0dcaf0;"></i>
+                                {{ wrong.explanation|truncatechars:200 }}
                             </small>
                         </div>
                         {% endif %}

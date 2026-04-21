@@ -983,8 +983,6 @@
                         <li><a href="#agents">Agents</a></li>
                         <li><a href="#flow">Process</a></li>
                         <li><a href="#features">Features</a></li>
-                        <li><a href="#testimonials">Research</a></li>
-                        <li><a href="#contact">Contact</a></li>
                     </ul>
 
                     <button class="theme-toggle" id="themeToggle">
@@ -1158,109 +1156,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials" id="testimonials">
-        <div class="container">
-            <div class="section-header animate-in">
-                <div class="section-subtitle">Research Impact</div>
-                <h2 class="section-title">Validated by Educators</h2>
-                <p class="section-description">Trusted by leading educational institutions for competency-based assessment.</p>
-            </div>
-
-            <div class="testimonials-slider">
-                <div class="testimonials-track" id="testimonialsTrack">
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            The multi-agent architecture provides unprecedented accuracy in competency assessment. The adaptive questioning reveals student understanding at a granular level we've never seen before.
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">JD</div>
-                            <div class="author-info">
-                                <h4>Dr. James Wilson</h4>
-                                <p>Professor of Educational Technology, Stanford</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            SoLPA and SoLTA agents work seamlessly together. We've reduced assessment time by 40% while improving accuracy by 25%. The CI calculation is a game-changer.
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">MC</div>
-                            <div class="author-info">
-                                <h4>Dr. Maria Chen</h4>
-                                <p>Director of Assessment, MIT</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            The adaptive nature keeps students engaged at exactly the right difficulty level. We've seen a 60% improvement in student motivation during assessments.
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">RK</div>
-                            <div class="author-info">
-                                <h4>Prof. Robert Kumar</h4>
-                                <p>Dean of Academics, Cambridge</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="slider-controls">
-                    <button class="slider-btn" id="prevTestimonial">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="slider-btn" id="nextTestimonial">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content animate-in">
-                <h2>Ready to Transform Competency Analysis?</h2>
-                <p>Join leading institutions using our multi-agent system for adaptive student assessment and personalized learning pathways.</p>
-
-                <div class="cta-buttons">
-                    <button class="btn btn-white">
-                        Start Free Trial
-                        <i class="fas fa-rocket"></i>
-                    </button>
-                    <button class="btn btn-outline-white">
-                        Schedule Demo
-                        <i class="fas fa-calendar-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="contact">
-        <div class="container">
-            <div class="footer-bottom">
-                <div class="copyright">
-                    &copy; 2026 EduAdapt. All rights reserved.
-                </div>
-
-                <div class="footer-bottom-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">Cookie Policy</a>
-                    <a href="mailto:hello@eduadapt.io">hello@eduadapt.io</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <script>
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -1317,33 +1212,6 @@
                 mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
             }
         });
-
-        // Testimonials slider
-        const testimonialsTrack = document.getElementById('testimonialsTrack');
-        const prevBtn = document.getElementById('prevTestimonial');
-        const nextBtn = document.getElementById('nextTestimonial');
-        let currentSlide = 0;
-        const totalSlides = testimonialsTrack.children.length;
-
-        const updateSlider = () => {
-            testimonialsTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
-        };
-
-        nextBtn.addEventListener('click', () => {
-            currentSlide = (currentSlide + 1) % totalSlides;
-            updateSlider();
-        });
-
-        prevBtn.addEventListener('click', () => {
-            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-            updateSlider();
-        });
-
-        // Auto slide testimonials
-        setInterval(() => {
-            currentSlide = (currentSlide + 1) % totalSlides;
-            updateSlider();
-        }, 5000);
 
         // Scroll animations
         const observerOptions = {

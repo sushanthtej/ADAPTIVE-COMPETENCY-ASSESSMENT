@@ -189,6 +189,35 @@
             .action-row { grid-template-columns:1fr 1fr; }
             .btn-submit  { grid-column: 1 / -1; order: -1; }
         }
+        /* ── Toast notifications ── */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 11000;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            background: #fff; border-radius: 10px; padding: 14px 20px;
+            min-width: 280px; max-width: 400px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            animation: toastIn 0.3s ease; font-size: 14px;
+        }
+        .toast.error   { border-left: 4px solid #f44336; }
+        .toast.success  { border-left: 4px solid #4caf50; }
+        .toast.warning  { border-left: 4px solid #ff9800; }
+        .toast .toast-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .toast.error .toast-icon   { color: #f44336; }
+        .toast.success .toast-icon { color: #4caf50; }
+        .toast.warning .toast-icon { color: #ff9800; }
+        @keyframes toastIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+
+        #exitConfirmModal {
+            display: none; position: fixed; inset: 0; z-index: 10001;
+            background: rgba(0,0,0,0.85); color: #fff;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 40px;
+        }
+        #exitConfirmModal h2 { font-size: 1.8rem; margin-bottom: 12px; }
+        #exitConfirmModal p  { font-size: 1.05rem; opacity: 0.85; max-width: 420px; margin-bottom: 28px; line-height: 1.6; }
     </style>
 </head>
 
@@ -203,9 +232,9 @@
     <div style="font-size:72px; margin-bottom:20px;">📝</div>
     <h1>{{ topic|title }} Assessment</h1>
     <p>
-        This test requires <strong>fullscreen mode</strong> to ensure integrity.
+        This test runs in <strong>fullscreen mode</strong> for a distraction-free experience.
         You have <strong>20 minutes</strong> to answer {{ total_questions }} questions.
-        Exiting fullscreen will end your test automatically.
+        If you accidentally exit fullscreen, you can re-enter it easily.
     </p>
     <div class="gate-badges">
         <span class="gate-badge">⏱ 20 minutes</span>
@@ -223,14 +252,24 @@
 ════════════════════════════════════════════════════════════════ -->
 <div id="fsWarning">
     <div style="font-size:64px;margin-bottom:16px;">⚠️</div>
-    <h2>Fullscreen Required</h2>
+    <h2>Fullscreen Exited</h2>
     <p>
-        You exited fullscreen mode. The test will be submitted in
-        <strong id="fsCountdown">5</strong> seconds unless you return.
+        You have exited fullscreen mode. Please return to fullscreen to continue your test.
+        Your progress is safe.
     </p>
     <div class="fs-actions">
-        <button class="fs-btn fs-btn-resume" onclick="enterFullscreen()">🔲 Return to Fullscreen</button>
-        <button class="fs-btn fs-btn-exit"   onclick="doExitTest()">❌ End Test Now</button>
+        <button class="fs-btn fs-btn-resume" onclick="enterFullscreen()">🔲 Re-enter Fullscreen</button>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<div id="exitConfirmModal">
+    <div style="font-size:64px;margin-bottom:16px;">🚪</div>
+    <h2>Exit Test?</h2>
+    <p>Your progress will be lost and this test will be marked as incomplete. Are you sure?</p>
+    <div class="fs-actions">
+        <button class="fs-btn fs-btn-resume" onclick="closeExitModal()">↩ Cancel</button>
+        <button class="fs-btn fs-btn-exit" onclick="confirmExit()">❌ Exit Test</button>
     </div>
 </div>
 
@@ -246,7 +285,6 @@
         <div class="info-bar">
             <div>
                 <span class="topic-badge">📚 {{ topic|title }}</span>
-                <span class="skip-badge" id="skipBadge" style="display:none;">⏭ <span id="skipCount">0</span> skipped</span>
             </div>
             <span style="opacity:0.75;font-size:13px;">Q{{ question_number }} / {{ total_questions }}</span>
         </div>
@@ -284,9 +322,6 @@
             <button type="button" class="btn-submit" id="nextBtn" disabled>
                 {% if is_last_question %}Save &amp; Proceed to Submit{% else %}Save &amp; Next →{% endif %}
             </button>
-
-            <!-- Task 3 – Skip -->
-            <button type="button" class="btn-skip" id="skipBtn">⏭ Skip</button>
         </div>
 
         <div class="loading" id="loading">
@@ -306,18 +341,9 @@
     let selectedAnswer   = null;
     let isSubmitting     = false;
     let questionStartTime = Date.now();
-    let testActive       = false;   // true only after user enters fullscreen
-    let fsCountdownTimer = null;
-    let testStarted      = false;   // guard so fsGate can't be bypassed
-
-    /**
-     * KEY FIX: `navigating` is set to true immediately before any deliberate
-     * DOM update that might transiently affect fullscreen state, and reset
-     * to false right after.  The fullscreenchange listener checks this flag
-     * and skips the ESC-warning logic while it is true, preventing false
-     * positives from triggering an auto-submit during normal navigation.
-     */
-    let navigating = false;
+    let testActive       = false;
+    let testStarted      = false;
+    let navigating       = false;
 
     // ── Helpers ─────────────────────────────────────────────────────────────
     function getCookie(name) {
@@ -334,15 +360,26 @@
 
     function showLoading() {
         document.getElementById('nextBtn').style.display = 'none';
-        document.getElementById('skipBtn').style.display = 'none';
         document.getElementById('exitBtn').style.display = 'none';
         document.getElementById('loading').style.display = 'block';
     }
     function hideLoading() {
         document.getElementById('nextBtn').style.display = '';
-        document.getElementById('skipBtn').style.display = '';
         document.getElementById('exitBtn').style.display = '';
         document.getElementById('loading').style.display = 'none';
+    }
+
+    function showToast(type, message) {
+        const container = document.getElementById('toastContainer');
+        const icons = { error: '❌', success: '✅', warning: '⚠️' };
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML =
+            '<span class="toast-icon">' + (icons[type] || '❌') + '</span>' +
+            '<span>' + escapeHtml(message) + '</span>';
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; }, 4000);
+        setTimeout(() => toast.remove(), 4400);
     }
 
     // ── Fullscreen API wrappers ──────────────────────────────────────────────
@@ -359,7 +396,6 @@
                   || document.mozFullScreenElement || document.msFullscreenElement);
     }
 
-    // Task 5: Start Test button – request fullscreen THEN reveal UI
     function startTestFullscreen() {
         enterFullscreen().then(() => {
             document.getElementById('fsGate').style.display = 'none';
@@ -378,40 +414,30 @@
         });
     }
 
-    // ── Task 5: Handle fullscreen-change events ──────────────────────────────
-    // IMPORTANT: skip the handler while `navigating` is true so that question
-    // transitions (which never touch the fullscreen API) don't look like an
-    // ESC press to this listener.
+    // ── FIX: No countdown, no auto-submit — just show re-enter button ──────
     function onFullscreenChange() {
         if (!testActive || !testStarted) return;
-        if (navigating) return;   // ← KEY FIX: ignore events during navigation
+        if (navigating) return;
 
         const warning = document.getElementById('fsWarning');
         if (!isFullscreen()) {
             warning.style.display = 'flex';
-            let secs = 5;
-            document.getElementById('fsCountdown').textContent = secs;
-            if (fsCountdownTimer) clearInterval(fsCountdownTimer);
-            fsCountdownTimer = setInterval(() => {
-                secs--;
-                document.getElementById('fsCountdown').textContent = secs;
-                if (secs <= 0) {
-                    clearInterval(fsCountdownTimer);
-                    doExitTest();
-                }
-            }, 1000);
         } else {
             warning.style.display = 'none';
-            if (fsCountdownTimer) { clearInterval(fsCountdownTimer); fsCountdownTimer = null; }
         }
     }
 
     ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
         .forEach(ev => document.addEventListener(ev, onFullscreenChange));
 
-    // ── Task 4: Exit test (status → expired) ────────────────────────────────
-    async function doExitTest() {
-        if (fsCountdownTimer) clearInterval(fsCountdownTimer);
+    // ── Exit test with confirmation ─────────────────────────────────────────
+    function showExitModal() {
+        document.getElementById('exitConfirmModal').style.display = 'flex';
+    }
+    function closeExitModal() {
+        document.getElementById('exitConfirmModal').style.display = 'none';
+    }
+    async function confirmExit() {
         if (!testActive) { window.location.href = '/test_history/'; return; }
         testActive = false;
         clearInterval(timerInterval);
@@ -425,16 +451,13 @@
         window.location.href = '/test_history/';
     }
 
-    // Tab close / navigation beacon
+    // ── Beacon ONLY on tab close — NOT on fullscreen exit ───────────────────
     function beaconAutoSubmit() {
         if (!testActive) return;
         const data = new Blob([JSON.stringify({ reason: 'page_leave' })], { type: 'application/json' });
         navigator.sendBeacon('/auto_submit_test/', data);
         testActive = false;
     }
-    window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden' && testActive) beaconAutoSubmit();
-    });
     window.addEventListener('beforeunload', () => { if (testActive) beaconAutoSubmit(); });
 
     // ── Timer ────────────────────────────────────────────────────────────────
@@ -447,8 +470,8 @@
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             testActive = false;
-            alert("Time's up! Your test has been submitted.");
-            window.location.href = '/test_history/';
+            showToast('warning', "Time's up! Your test has been auto-submitted.");
+            setTimeout(() => { window.location.href = '/test_history/'; }, 1500);
             return;
         }
         const m = Math.floor(timeLeft / 60);
@@ -472,38 +495,19 @@
         document.getElementById('nextBtn').disabled = false;
     });
 
-    // ── KEY FIX: Dynamic DOM update (replaces window.location.reload()) ───────
-    /**
-     * updateQuestionUI(data)
-     * Called after a successful save_answer or skip_question fetch.
-     * Surgically rewrites every visible piece of question state so the
-     * browser stays on the same page – and fullscreen is never interrupted.
-     *
-     * Expected `data` shape (from either backend endpoint):
-     *  {
-     *    success: true,
-     *    is_complete: false,
-     *    next_question_number: <int>,   // 1-based
-     *    total: <int>,
-     *    progress: <int 0-100>,
-     *    question_data: { question: '...', options: ['A','B','C','D'] } | null,
-     *    is_skipped_revisit: <bool>,
-     *    skipped_count: <int>,
-     *  }
-     */
+    // ── DOM update (no page reload) ──────────────────────────────────────────
     function updateQuestionUI(data) {
         const qNum   = data.next_question_number;
         const total  = data.total;
         const qData  = data.question_data;
 
-        // 1. Question text
-        if (qData && qData.question) {
-            document.getElementById('questionText').textContent = qData.question;
+        const questionTextEl = document.getElementById('questionText');
+        if (qData && qData.question && questionTextEl) {
+            questionTextEl.textContent = qData.question;
         }
 
-        // 2. Options – rebuild the options container
         const container = document.getElementById('optionsContainer');
-        if (qData && Array.isArray(qData.options) && qData.options.length) {
+        if (container && qData && Array.isArray(qData.options) && qData.options.length) {
             container.innerHTML = qData.options.map((opt, i) => `
                 <div class="option" data-value="${escapeHtml(opt)}">
                     <input type="radio" name="answer" value="${escapeHtml(opt)}"
@@ -513,11 +517,10 @@
             `).join('');
         }
 
-        // 3. Reset selection state
         selectedAnswer = null;
-        document.getElementById('nextBtn').disabled = true;
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) nextBtn.disabled = true;
 
-        // 4. Question header – number & revisit tag
         const qNumSpan = document.querySelector('.question-number');
         if (qNumSpan) {
             qNumSpan.innerHTML =
@@ -525,104 +528,130 @@
                 (data.is_skipped_revisit ? ' <span class="skipped-tag">↩ Revisiting</span>' : '');
         }
 
-        // 5. Progress % label (second .question-number span)
         const allQNumSpans = document.querySelectorAll('.question-number');
-        if (allQNumSpans[1]) allQNumSpans[1].textContent = `📊 ${data.progress}% Complete`;
+        if (allQNumSpans && allQNumSpans[1]) allQNumSpans[1].textContent = `📊 ${data.progress}% Complete`;
 
-        // 6. Progress bar fill
         const fill = document.getElementById('progressFill');
-        if (fill) fill.style.width = data.progress + '%';
+        if (fill) fill.style.width = (data.progress || 0) + '%';
 
-        // 7. Q / total in the header info-bar
         const infoQSpan = document.querySelector('.info-bar span:last-child');
         if (infoQSpan) infoQSpan.textContent = `Q${qNum} / ${total}`;
 
-        // 8. Skip badge
         const skipped = data.skipped_count || 0;
-        if (skipped > 0) {
-            document.getElementById('skipBadge').style.display = '';
-            document.getElementById('skipCount').textContent = skipped;
-        } else {
-            document.getElementById('skipBadge').style.display = 'none';
+        const skipBadge = document.getElementById('skipBadge');
+        const skipCount = document.getElementById('skipCount');
+        if (skipBadge) {
+            skipBadge.style.display = skipped > 0 ? '' : 'none';
+        }
+        if (skipCount && skipped > 0) {
+            skipCount.textContent = skipped;
         }
 
-        // 9. Counter text at bottom
         const counter = document.getElementById('qCounter');
-        if (counter) counter.textContent = `${qNum - 1} of ${total} questions answered`;
+        if (counter) counter.textContent = `${(qNum || 1) - 1} of ${total} questions answered`;
 
-        // 10. Update "Save & Next" vs "Save & Proceed to Submit" label
-        const nextBtn = document.getElementById('nextBtn');
-        const isLast  = qNum === total;
-        nextBtn.innerHTML = isLast ? 'Save &amp; Proceed to Submit' : 'Save &amp; Next →';
+        if (nextBtn) {
+            const isLast = qNum === total;
+            nextBtn.innerHTML = isLast ? 'Save &amp; Proceed to Submit' : 'Save &amp; Next →';
+        }
 
-        // 11. Scroll question into view smoothly
-        document.querySelector('.question-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const qContainer = document.querySelector('.question-container');
+        if (qContainer) qContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // 12. Reset the per-question timer
         questionStartTime = Date.now();
     }
 
-    /** Minimal HTML-escape to prevent XSS when injecting option text into innerHTML */
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
             .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    // ── Event Delegation for Buttons ─────────────────────────────────────────
+    // ── Button delegation ────────────────────────────────────────────────────
     document.getElementById('actionContainer').addEventListener('click', function(e) {
         if (e.target.closest('#nextBtn') && !e.target.closest('#nextBtn').disabled) {
             saveAndNext();
         } else if (e.target.closest('#skipBtn')) {
             doSkip();
         } else if (e.target.closest('#exitBtn')) {
-            doExitTest();
+            showExitModal();
         }
     });
 
-    // ── Task 3: Skip question ────────────────────────────────────────────────
+    // ── FIX: Retry helper — retries the fetch if question_data is null ──────
+    async function fetchWithRetry(url, body, retries = 2) {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) {
+                    throw new Error(`Server error ${res.status}`);
+                }
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Server returned unsuccessful status');
+                }
+
+                // If question_data is null and test is not complete, retry
+                if (!data.is_complete && !data.question_data && attempt < retries) {
+                    console.log(`question_data is null, retrying (${attempt+1}/${retries})...`);
+                    showToast('warning', 'Generating question... please wait.');
+                    await new Promise(r => setTimeout(r, 3000)); // wait 3 seconds
+                    continue;
+                }
+
+                return data;
+            } catch (err) {
+                if (attempt < retries) {
+                    console.log(`Fetch error, retrying (${attempt+1}/${retries}):`, err.message);
+                    showToast('warning', 'Connection issue, retrying...');
+                    await new Promise(r => setTimeout(r, 2000));
+                    continue;
+                }
+                throw err;
+            }
+        }
+    }
+
+    // ── Skip question ────────────────────────────────────────────────────────
     async function doSkip() {
         if (isSubmitting) return;
         isSubmitting = true;
         showLoading();
         try {
-            const res  = await fetch('/skip_question/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                body: JSON.stringify({})
-            });
-            const data = await res.json();
-            if (data.success) {
-                if (data.is_complete) {
-                    navigating = true;
-                    clearInterval(timerInterval);
-                    testActive = false;
-                    window.location.href = '/test_ready_to_submit/{{ topic }}/{{ difficulty }}/';
-                } else if (data.question_data) {
-                    // ── KEY FIX: update DOM in-place, no reload needed ──────
-                    navigating = true;
-                    hideLoading();
-                    updateQuestionUI(data);
-                    isSubmitting = false;
-                    setTimeout(() => { navigating = false; }, 100);
-                } else {
-                    // Fallback: question generation failed on backend; DO NOT reload!
-                    throw new Error('Next question generation failed on the backend.');
-                }
+            const data = await fetchWithRetry('/skip_question/', {});
+
+            if (data.is_complete) {
+                navigating = true;
+                clearInterval(timerInterval);
+                testActive = false;
+                window.location.href = '/test_ready_to_submit/{{ topic }}/{{ difficulty }}/';
+            } else if (data.question_data) {
+                navigating = true;
+                hideLoading();
+                updateQuestionUI(data);
+                isSubmitting = false;
+                setTimeout(() => { navigating = false; }, 100);
             } else {
-                throw new Error('Server returned unsuccessful skip status.');
+                // Still null after retries — reload the page as last resort
+                showToast('error', 'Could not load next question. Reloading...');
+                setTimeout(() => { window.location.reload(); }, 1500);
             }
         } catch(err) {
             console.error('Skip error:', err);
-            alert('Unable to skip. Please try again.');
+            showToast('error', 'Unable to skip. Please try again.');
             hideLoading();
             isSubmitting = false;
         }
     }
 
-    // ── Save answer & advance to next question ───────────────────────────────
+    // ── Save answer & advance ────────────────────────────────────────────────
     async function saveAndNext() {
-        if (!selectedAnswer) { alert('Please select an answer before proceeding!'); return; }
+        if (!selectedAnswer) { showToast('warning', 'Please select an answer before proceeding!'); return; }
         if (isSubmitting) return;
         isSubmitting = true;
 
@@ -631,35 +660,30 @@
         showLoading();
 
         try {
-            const res  = await fetch('/save_answer/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                body: JSON.stringify({ answer: selectedAnswer, time_taken: timeTaken })
+            const data = await fetchWithRetry('/save_answer/', {
+                answer: selectedAnswer,
+                time_taken: timeTaken
             });
-            const data = await res.json();
-            if (data.success) {
-                if (data.is_complete) {
-                    navigating = true;
-                    clearInterval(timerInterval);
-                    testActive = false;
-                    window.location.href = '/test_ready_to_submit/{{ topic }}/{{ difficulty }}/';
-                } else if (data.question_data) {
-                    // ── KEY FIX: update DOM in-place, no reload needed ───────
-                    navigating = true;
-                    hideLoading();
-                    updateQuestionUI(data);
-                    isSubmitting = false;
-                    setTimeout(() => { navigating = false; }, 100);
-                } else {
-                    // Fallback: backend failed to pre-generate the question
-                    throw new Error('Next question generation failed on the backend.');
-                }
+
+            if (data.is_complete) {
+                navigating = true;
+                clearInterval(timerInterval);
+                testActive = false;
+                window.location.href = '/test_ready_to_submit/{{ topic }}/{{ difficulty }}/';
+            } else if (data.question_data) {
+                navigating = true;
+                hideLoading();
+                updateQuestionUI(data);
+                isSubmitting = false;
+                setTimeout(() => { navigating = false; }, 100);
             } else {
-                throw new Error('Server returned unsuccessful save status.');
+                // Still null after retries — reload as last resort
+                showToast('error', 'Could not load next question. Reloading...');
+                setTimeout(() => { window.location.reload(); }, 1500);
             }
         } catch(err) {
             console.error('Network error:', err);
-            alert('Network error. Please check your connection or try again.');
+            showToast('error', 'Network error. Please check your connection or try again.');
             hideLoading();
             document.getElementById('nextBtn').disabled = false;
             isSubmitting = false;

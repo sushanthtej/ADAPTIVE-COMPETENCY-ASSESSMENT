@@ -642,7 +642,7 @@ def save_answer(request):
                 questions_list = test_session['questions']
                 if len(questions_list) <= next_index:
                     try:
-                        next_difficulty = test_session.get('difficulty', difficulty)
+                        next_difficulty = test_session.get('difficulty', 'Medium')
                         nq = call_gemini_api(
                             test_session.get('topic', 'reasoning'),
                             next_difficulty,
@@ -1278,4 +1278,3 @@ def leaderboard(request):
     }
     
     return render(request, 'leaderboard.html', context)
-
